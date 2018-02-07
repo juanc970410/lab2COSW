@@ -226,6 +226,12 @@ var APIService = (function () {
         this.authService = authService;
         this.http = http;
     }
+    APIService.prototype.get = function (url, options) {
+        return this.http
+            .get(this.config.apiURL + "/" + url, this.getRequestOptions(options))
+            .map(this.extractData)
+            .catch(this.handleError);
+    };
     APIService.prototype.post = function (url, body, options) {
         return this.http
             .post(this.config.apiURL + "/" + url, body, this.getRequestOptions(options))
@@ -732,8 +738,12 @@ var TaskEditPageComponent = (function () {
         });
     };
     TaskEditPageComponent.prototype.onSubmit = function () {
-        this.todoService.create(this.todoForm.get('description').value, this.todoForm.get('priority').value, Boolean(this.todoForm.get('completed').value));
-        this.router.navigate(['/tasks']);
+        var _this = this;
+        this.todoService.create(this.todoForm.get('description').value, this.todoForm.get('priority').value, Boolean(this.todoForm.get('completed').value)).subscribe(function (serverResponse) {
+            _this.router.navigate(['/tasks']);
+        }, function (error) {
+            console.log(error);
+        });
     };
     return TaskEditPageComponent;
 }());
@@ -800,7 +810,10 @@ var TaskListPageComponent = (function () {
         this.todos = [];
     }
     TaskListPageComponent.prototype.ngOnInit = function () {
-        this.todos = this.todoService.list();
+        var _this = this;
+        this.todoService.list().subscribe(function (todosResponse) {
+            _this.todos = todosResponse;
+        });
     };
     return TaskListPageComponent;
 }());
@@ -825,36 +838,43 @@ var _a;
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return TodoService; });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__("../../../core/@angular/core.es5.js");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__models_todo__ = __webpack_require__("../../../../../src/app/models/todo.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__common_api_service__ = __webpack_require__("../../../../../src/app/common/api.service.ts");
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
 
 
-var TodoService = (function () {
+
+var TodoService = (function (_super) {
+    __extends(TodoService, _super);
     function TodoService() {
-        this.todos = [
-            new __WEBPACK_IMPORTED_MODULE_1__models_todo__["a" /* Todo */]('todo 1'),
-            new __WEBPACK_IMPORTED_MODULE_1__models_todo__["a" /* Todo */]('todo 2', 1, true),
-            new __WEBPACK_IMPORTED_MODULE_1__models_todo__["a" /* Todo */]('todo 3')
-        ];
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        _this.resourceUrl = 'api/todo';
+        return _this;
     }
     TodoService.prototype.list = function () {
-        return this.todos;
+        return this.get(this.resourceUrl);
     };
     TodoService.prototype.create = function (description, priority, completed) {
-        this.todos.push(new __WEBPACK_IMPORTED_MODULE_1__models_todo__["a" /* Todo */](description, priority, completed));
+        return this.post(this.resourceUrl, new __WEBPACK_IMPORTED_MODULE_1__models_todo__["a" /* Todo */](description, priority, completed));
     };
     return TodoService;
-}());
+}(__WEBPACK_IMPORTED_MODULE_2__common_api_service__["a" /* APIService */]));
 TodoService = __decorate([
-    Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["C" /* Injectable */])(),
-    __metadata("design:paramtypes", [])
+    Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["C" /* Injectable */])()
 ], TodoService);
 
 //# sourceMappingURL=todo.service.js.map
